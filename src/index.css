@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-crt-green font-mono select-none overflow-hidden;
+  }
+}
+
+/* Custom Retro Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080d08;
+  border: 1px solid #005522;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ff66;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #33ff88;
+}
+
+/* CRT CRT Glow Effects */
+.text-glow {
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+}
+
+.box-glow {
+  box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+}
