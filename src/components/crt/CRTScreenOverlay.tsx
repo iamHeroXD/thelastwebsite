@@ -101,7 +101,7 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-crt-dark rounded-xl select-none"
+      className="relative w-full h-full overflow-hidden bg-crt-dark select-none"
       style={{ color: currentThemeColor }}
     >
       {/* Curved Screen Barrel Distortion & Bloom Wrapper */}
@@ -113,7 +113,7 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
           filter: `brightness(${brightnessVal}) contrast(${1.0 + intensityVal * 0.15}) drop-shadow(0 0 ${Math.round(
             intensityVal * 10
           )}px ${currentThemeDropShadow})`,
-          transform: crtSettings.reducedMotion ? 'none' : 'scale(0.995)',
+          transform: crtSettings.reducedMotion ? 'none' : 'scale(1.0)',
         }}
       >
         {/* Actual Game Screen Content */}
@@ -122,23 +122,21 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
         {/* HTML5 Canvas CRT Scanlines & Roll overlay */}
         <canvas
           ref={canvasRef}
-          className="absolute inset-0 pointer-events-none z-40 rounded-xl"
+          className="absolute inset-0 pointer-events-none z-40"
         />
 
         {/* Vignette & Corner Screen Shadow */}
         <div
-          className="absolute inset-0 pointer-events-none z-50 rounded-xl"
+          className="absolute inset-0 pointer-events-none z-50"
           style={{
-            boxShadow: `inset 0 0 ${60 * intensityVal}px rgba(0, 0, 0, ${0.8 * intensityVal}), inset 0 0 ${
-              120 * intensityVal
-            }px rgba(0, 15, 5, ${0.6 * intensityVal})`,
+            boxShadow: `inset 0 0 ${40 * intensityVal}px rgba(0, 0, 0, ${0.7 * intensityVal})`,
           }}
         />
 
         {/* Chromatic Aberration RGB Edge Fringe */}
         {crtSettings.chromatic && intensityVal > 0.2 && (
           <div
-            className="absolute inset-0 pointer-events-none z-30 opacity-30 mix-blend-screen"
+            className="absolute inset-0 pointer-events-none z-30 opacity-20 mix-blend-screen"
             style={{
               boxShadow: `inset 2px 0 0 rgba(255, 0, 0, 0.4), inset -2px 0 0 rgba(0, 255, 255, 0.4)`,
             }}
