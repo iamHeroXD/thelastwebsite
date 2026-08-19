@@ -35,12 +35,12 @@ export const BrowserWindow: React.FC = () => {
   useEffect(() => {
     setInputUrl(currentUrl);
     setIsLoading(true);
-    setLoadingText('CONNECTING TO NODE...');
+    setLoadingText('CONNECTING TO SURVIVING NODE...');
 
     const timer = setTimeout(() => {
       setIsLoading(false);
-      setLoadingText('PACKET TRANSMISSION COMPLETE');
-    }, 400);
+      setLoadingText('TRANSMISSION COMPLETE');
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [currentUrl]);
@@ -69,140 +69,68 @@ export const BrowserWindow: React.FC = () => {
   }, [matchedPage, discoverEvidence]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-crt-dark text-crt-green font-mono text-xs select-none relative">
-      {/* Retro Browser Chrome Top Bar */}
-      <div className="bg-stone-900 border-b-2 border-crt-green/40 p-2 space-y-2">
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={browserBack}
-              className="p-1 hover:bg-crt-green hover:text-black rounded transition-colors"
-              title="Back"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={browserForward}
-              className="p-1 hover:bg-crt-green hover:text-black rounded transition-colors"
-              title="Forward"
-            >
-              <ArrowRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => navigateUrl(currentUrl)}
-              className="p-1 hover:bg-crt-green hover:text-black rounded transition-colors"
-              title="Reload Page"
-            >
-              <RotateCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
-            <button
-              onClick={() => navigateUrl('http://worldnet.news')}
-              className="p-1 hover:bg-crt-green hover:text-black rounded transition-colors"
-              title="Home"
-            >
-              <Home className="w-4 h-4" />
-            </button>
-          </div>
-
-          <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center">
-            <div className="w-full flex items-center px-3 py-1 bg-black border border-crt-green/60 rounded shadow-inner">
-              <Globe className="w-3.5 h-3.5 text-crt-green mr-2" />
-              <input
-                type="text"
-                value={inputUrl}
-                onChange={(e) => setInputUrl(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-crt-green text-xs font-mono"
-              />
-              <button type="submit" className="text-[10px] px-2 py-0.5 bg-crt-green/20 hover:bg-crt-green hover:text-black rounded font-bold">
-                GO
-              </button>
-            </div>
-          </form>
-
+    <div className="w-full h-full flex flex-col bg-black text-cyan-300 font-mono text-xs select-none relative">
+      
+      {/* Bookmarks Quick Bar */}
+      <div className="flex items-center space-x-2 text-[10px] pb-3 border-b border-cyan-400/40 mb-4 overflow-x-auto">
+        <span className="text-yellow-300 font-bold">BOOKMARKS:</span>
+        {bookmarks.map((bmUrl) => (
           <button
-            onClick={() => navigateUrl('http://nexus.search')}
-            className="p-1.5 bg-crt-green/20 hover:bg-crt-green hover:text-black rounded text-xs flex items-center space-x-1 font-bold"
-            title="Nexus Search Engine"
+            key={bmUrl}
+            onClick={() => {
+              soundEngine.playKeyClick();
+              navigateUrl(bmUrl);
+            }}
+            className={`px-2 py-0.5 rounded border transition-colors truncate max-w-[150px] font-bold ${
+              currentUrl === bmUrl
+                ? 'bg-yellow-400 text-black border-white'
+                : 'bg-slate-900 border-cyan-400/30 text-cyan-300 hover:border-cyan-400'
+            }`}
           >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">SEARCH</span>
+            {bmUrl.replace('http://', '')}
           </button>
-
-          <button
-            onClick={() => addBookmark(currentUrl)}
-            className="p-1.5 hover:bg-crt-green hover:text-black rounded text-xs"
-            title="Bookmark Page"
-          >
-            <Bookmark className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center space-x-1 px-2 py-1 bg-black border border-crt-green/30 rounded">
-            <Wifi className={`w-3 h-3 ${isLoading ? 'text-amber-400 animate-pulse' : 'text-crt-green'}`} />
-            <span className="text-[9px] text-crt-green/70 hidden md:inline">440MHz</span>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2 text-[10px] overflow-x-auto pt-1 border-t border-crt-green/10">
-          <span className="text-crt-green/50 font-bold">BOOKMARKS:</span>
-          {bookmarks.map((bmUrl) => (
-            <button
-              key={bmUrl}
-              onClick={() => {
-                soundEngine.playKeyClick();
-                navigateUrl(bmUrl);
-              }}
-              className={`px-2 py-0.5 rounded border transition-colors truncate max-w-[140px] ${
-                currentUrl === bmUrl
-                  ? 'bg-crt-green text-black font-bold border-crt-green'
-                  : 'bg-black/40 border-crt-green/20 text-crt-green/80 hover:border-crt-green'
-              }`}
-            >
-              {bmUrl.replace('http://', '')}
-            </button>
-          ))}
-        </div>
+        ))}
       </div>
 
-      {/* Main Page View Container */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-crt-dark">
+      {/* Main Web Page Body */}
+      <div className="flex-1 overflow-y-auto pr-1">
         {isLoading ? (
-          <div className="h-full flex flex-col items-center justify-center space-y-4 text-crt-green">
-            <div className="w-12 h-12 border-4 border-crt-green border-t-transparent rounded-full animate-spin" />
-            <div className="text-xs font-bold animate-pulse">{loadingText}</div>
-            <div className="text-[10px] text-crt-green/60 font-mono">
-              PACKET 01 .... OK | PACKET 02 .... OK | SIGNAL HARMONIC: 440MHz
-            </div>
+          <div className="h-full flex flex-col items-center justify-center space-y-3 py-16 text-cyan-300">
+            <div className="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+            <div className="text-xs font-bold animate-pulse text-yellow-300">{loadingText}</div>
           </div>
         ) : currentUrl === 'http://nexus.search' ? (
           <NexusSearch />
         ) : matchedPage ? (
           <div className="max-w-4xl mx-auto space-y-6 select-text">
-            <div className="border-b-2 border-crt-green/40 pb-4">
-              <div className="text-xs text-amber-400 font-bold tracking-widest uppercase mb-1">
+            {/* 90s Web Page Title Banner */}
+            <div className="border-b-2 border-cyan-400 pb-3">
+              <div className="text-xs text-yellow-300 font-bold tracking-widest uppercase mb-1">
                 {matchedSite?.name} — {matchedSite?.tagline}
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-crt-green tracking-wide">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-cyan-300 tracking-wide">
                 {matchedPage.title}
               </h1>
             </div>
 
-            <div className="prose prose-invert max-w-none text-xs md:text-sm font-mono leading-relaxed space-y-4">
+            {/* Markdown / HTML Content Render */}
+            <div className="prose prose-invert max-w-none text-xs md:text-sm font-mono leading-relaxed space-y-4 text-cyan-200">
               {matchedPage.content.split('\n\n').map((paragraph, idx) => {
                 if (paragraph.startsWith('# ')) {
                   return (
-                    <h2 key={idx} className="text-xl font-bold text-crt-green pt-2 border-b border-crt-green/20">
+                    <h2 key={idx} className="text-xl font-bold text-yellow-300 pt-2 border-b border-cyan-400/30">
                       {paragraph.replace('# ', '')}
                     </h2>
                   );
                 } else if (paragraph.startsWith('### ')) {
                   return (
-                    <h3 key={idx} className="text-sm font-bold text-amber-400 pt-2">
+                    <h3 key={idx} className="text-sm font-bold text-cyan-300 pt-2">
                       {paragraph.replace('### ', '')}
                     </h3>
                   );
                 } else if (paragraph.startsWith('> ')) {
                   return (
-                    <blockquote key={idx} className="p-3 border-l-4 border-amber-400 bg-amber-950/20 text-amber-300 italic rounded">
+                    <blockquote key={idx} className="p-3 border-l-4 border-yellow-400 bg-slate-900 text-yellow-200 italic rounded">
                       {paragraph.replace('> ', '')}
                     </blockquote>
                   );
@@ -226,7 +154,7 @@ export const BrowserWindow: React.FC = () => {
                         soundEngine.playKeyClick();
                         navigateUrl(linkHref);
                       }}
-                      className="text-amber-400 hover:underline font-bold inline-flex items-center space-x-1 mx-1"
+                      className="text-yellow-300 hover:underline font-bold inline-flex items-center space-x-1 mx-1"
                     >
                       <span>{linkText}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -244,10 +172,10 @@ export const BrowserWindow: React.FC = () => {
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 select-text">
-            <FileQuestion className="w-16 h-16 text-amber-400 animate-bounce" />
-            <h1 className="text-2xl font-bold text-red-400">404 — SURVIVING NODE NOT FOUND</h1>
-            <p className="text-xs text-crt-green/80 max-w-md">
-              The URL <span className="text-amber-400 font-bold">{currentUrl}</span> could not be reached across the ionospheric frequency matrix.
+            <FileQuestion className="w-16 h-16 text-yellow-400 animate-bounce" />
+            <h1 className="text-2xl font-bold text-red-400">404 — PAGE NOT FOUND</h1>
+            <p className="text-xs text-cyan-200 max-w-md">
+              The requested URL <span className="text-yellow-300 font-bold">{currentUrl}</span> could not be found on the archived server.
             </p>
           </div>
         )}

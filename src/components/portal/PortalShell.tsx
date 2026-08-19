@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { initialWebsites } from '../../data/storyData';
 import { soundEngine } from '../../audio/soundEngine';
 import { BrowserWindow } from '../browser/BrowserWindow';
 import { PortalSidebar } from './PortalSidebar';
 import { EvidenceBoard } from '../investigation/EvidenceBoard';
-import { ContradictionsView } from '../investigation/ContradictionsView';
 import { Notebook } from '../investigation/Notebook';
 import { TerminalWindow } from '../terminal/TerminalWindow';
 import { RadioScanner } from '../os/RadioScanner';
 import { SettingsModal } from '../crt/SettingsModal';
 import {
-  Globe,
+  ArrowLeft,
+  ArrowRight,
+  XCircle,
+  RotateCw,
+  Home,
   Search,
+  Star,
+  History,
+  Printer,
   Sliders,
   Shield,
   Radio,
@@ -22,178 +27,180 @@ import {
   Terminal as TermIcon,
   X,
   Zap,
-  ExternalLink,
 } from 'lucide-react';
 
 export const PortalShell: React.FC = () => {
   const currentUrl = useGameStore((state) => state.currentUrl);
   const navigateUrl = useGameStore((state) => state.navigateUrl);
-  const unlockedUrls = useGameStore((state) => state.unlockedUrls);
+  const browserBack = useGameStore((state) => state.browserBack);
+  const browserForward = useGameStore((state) => state.browserForward);
 
   const [activeDrawerTab, setActiveDrawerTab] = useState<'evidence' | 'timeline' | 'contradictions' | 'notebook' | 'terminal' | 'radio' | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [searchInput, setSearchInput] = useState('');
+  const [addressInput, setAddressInput] = useState(currentUrl);
 
   const navLinks = [
-    { name: 'WORLDNET NEWS', url: 'http://worldnet.news', color: 'text-emerald-400' },
-    { name: 'AURORA ENERGY', url: 'http://aurora-energy.net', color: 'text-amber-400' },
-    { name: 'WEATHER NETWORK', url: 'http://globalweather.gov', color: 'text-cyan-400' },
-    { name: 'ARCHIVE SOCIAL', url: 'http://archive.social', color: 'text-indigo-400' },
-    { name: 'HELIX BIOLOGICS', url: 'http://helixbio.org', color: 'text-teal-400' },
-    { name: 'GOV ARCHIVE', url: 'http://gov.archive.sys', color: 'text-rose-400' },
-    { name: 'KYLE VANCE BLOG', url: 'http://blog.kyle-vance.me', color: 'text-yellow-400' },
-    { name: 'SOLITUDE OBS', url: 'http://solitude-journal.org', color: 'text-sky-400' },
-    { name: 'RETRO FORUM', url: 'http://retro-forum.net', color: 'text-orange-400' },
-    { name: 'NODE 001', url: 'http://deep-signal.node001.net', color: 'text-red-400' },
+    { name: 'WORLDNET NEWS', url: 'http://worldnet.news' },
+    { name: 'AURORA ENERGY', url: 'http://aurora-energy.net' },
+    { name: 'WEATHER NETWORK', url: 'http://globalweather.gov' },
+    { name: 'ARCHIVE SOCIAL', url: 'http://archive.social' },
+    { name: 'HELIX BIOLOGICS', url: 'http://helixbio.org' },
+    { name: 'GOV ARCHIVE', url: 'http://gov.archive.sys' },
+    { name: 'KYLE VANCE BLOG', url: 'http://blog.kyle-vance.me' },
+    { name: 'SOLITUDE OBS', url: 'http://solitude-journal.org' },
+    { name: 'RETRO FORUM', url: 'http://retro-forum.net' },
+    { name: 'NODE 001', url: 'http://deep-signal.node001.net' },
   ];
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchInput.trim()) {
-      navigateUrl('http://nexus.search');
+    if (addressInput.trim()) {
+      navigateUrl(addressInput);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 font-mono flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
-      {/* Top Portal Header Bar */}
-      <header className="w-full bg-slate-900 border-b border-slate-800 shadow-xl">
-        {/* Top Emergency Broadcast Ticker */}
-        <div className="bg-amber-950/80 border-b border-amber-500/40 px-4 py-1 flex items-center justify-between text-xs text-amber-300 font-bold overflow-hidden">
-          <div className="flex items-center space-x-2 animate-pulse truncate">
-            <Zap className="w-4 h-4 text-amber-400 flex-shrink-0" />
-            <span className="truncate">
-              EMERGENCY NETWORK ALERT: SATELLITE RELAY #41 LOST AT 04:12 UTC. IONOSPHERE CARRIER WAVE LOCKED AT 440MHz.
-            </span>
+    <div className="min-h-screen w-full bg-black text-cyan-300 font-sans flex flex-col justify-between selection:bg-yellow-400 selection:text-black">
+      
+      {/* 1990s Internet Explorer Top Chrome Container */}
+      <header className="w-full bg-[#c0c0c0] text-black border-b-2 border-[#404040] shadow-md select-none font-sans text-xs">
+        
+        {/* IE Window Title Bar */}
+        <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-950 text-white px-2 py-1 flex items-center justify-between font-bold text-xs">
+          <div className="flex items-center space-x-2 truncate">
+            <span className="w-3.5 h-3.5 rounded-full bg-cyan-400 inline-block border border-white" />
+            <span className="truncate">The Last Website on Earth - Microsoft Internet Explorer</span>
           </div>
-          <div className="hidden md:flex items-center space-x-3 text-[11px] text-amber-400">
-            <span>WORKSTATION: NODE 001</span>
-            <span>SYSTEM STATUS: RECOVERY MODE</span>
+          <div className="flex items-center space-x-1">
+            <button className="px-2 py-0.5 bg-[#c0c0c0] text-black font-extrabold text-[10px] border border-white shadow">_</button>
+            <button className="px-2 py-0.5 bg-[#c0c0c0] text-black font-extrabold text-[10px] border border-white shadow">□</button>
+            <button className="px-2 py-0.5 bg-red-600 text-white font-extrabold text-[10px] border border-white shadow">X</button>
           </div>
         </div>
 
-        {/* Graphical Logo & Main Navigation */}
-        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div
-            onClick={() => {
-              soundEngine.playKeyClick();
-              navigateUrl('http://worldnet.news');
-            }}
-            className="flex items-center space-x-3 cursor-pointer group"
-          >
-            <div className="p-2.5 bg-emerald-500 text-black font-extrabold rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-105 transition-transform">
-              <Globe className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl md:text-2xl font-black tracking-widest text-emerald-400 group-hover:text-emerald-300 transition-colors uppercase">
-                THE LAST WEBSITE ON EARTH
-              </h1>
-              <p className="text-[11px] text-slate-400 tracking-wider">
-                SURVIVING DIGITAL INTERNET ARCHIVE (EST. 2087)
-              </p>
-            </div>
-          </div>
+        {/* IE Menu Bar */}
+        <div className="flex items-center space-x-4 px-2 py-0.5 border-b border-[#808080] text-xs">
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">File</span>
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">Edit</span>
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">View</span>
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">Favorites</span>
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">Tools</span>
+          <span className="cursor-pointer hover:bg-blue-800 hover:text-white px-1">Help</span>
+        </div>
 
-          {/* Quick Search & Config */}
-          <div className="flex items-center space-x-3 w-full md:w-auto">
-            <form onSubmit={handleSearchSubmit} className="flex-1 md:w-72 flex items-center">
-              <div className="w-full flex items-center px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs">
-                <Search className="w-4 h-4 text-slate-400 mr-2" />
-                <input
-                  type="text"
-                  placeholder="Search archive keywords..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full bg-transparent border-none outline-none text-slate-200 focus:outline-none"
-                />
-              </div>
-            </form>
+        {/* IE Action Toolbar Buttons */}
+        <div className="flex items-center space-x-1 px-2 py-1 bg-[#c0c0c0] border-b border-[#808080] overflow-x-auto">
+          <button onClick={browserBack} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <ArrowLeft className="w-3.5 h-3.5 text-blue-900" />
+            <span>Back</span>
+          </button>
+          <button onClick={browserForward} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <ArrowRight className="w-3.5 h-3.5 text-blue-900" />
+            <span>Forward</span>
+          </button>
+          <button onClick={() => navigateUrl(currentUrl)} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <RotateCw className="w-3.5 h-3.5 text-blue-900" />
+            <span>Refresh</span>
+          </button>
+          <button onClick={() => navigateUrl('http://worldnet.news')} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <Home className="w-3.5 h-3.5 text-blue-900" />
+            <span>Home</span>
+          </button>
+          <button onClick={() => navigateUrl('http://nexus.search')} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <Search className="w-3.5 h-3.5 text-blue-900" />
+            <span>Search</span>
+          </button>
 
-            <button
-              onClick={() => {
-                soundEngine.playKeyClick();
-                setShowSettingsModal(true);
-              }}
-              className="p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-300 transition-colors"
-              title="System Config"
-            >
-              <Sliders className="w-4 h-4 text-emerald-400" />
+          <div className="h-5 border-r border-[#808080] mx-1" />
+
+          <button onClick={() => setShowSettingsModal(true)} className="bevel-outset px-2 py-1 flex items-center space-x-1 font-bold text-[11px]">
+            <Sliders className="w-3.5 h-3.5 text-blue-900" />
+            <span>Config</span>
+          </button>
+        </div>
+
+        {/* IE Address Bar */}
+        <div className="flex items-center space-x-2 px-2 py-1 bg-[#c0c0c0]">
+          <span className="font-bold text-xs">Address</span>
+          <form onSubmit={handleAddressSubmit} className="flex-1 flex items-center">
+            <input
+              type="text"
+              value={addressInput}
+              onChange={(e) => setAddressInput(e.target.value)}
+              className="w-full px-2 py-0.5 bg-white text-black font-mono text-xs border-2 border-[#404040] focus:outline-none"
+            />
+            <button type="submit" className="bevel-outset px-3 py-0.5 ml-1 font-bold text-xs">
+              Go
             </button>
-          </div>
+          </form>
         </div>
-
-        {/* Graphical Website Navigation Tabs Bar */}
-        <nav className="w-full bg-slate-950 border-t border-slate-800 overflow-x-auto">
-          <div className="max-w-7xl mx-auto px-4 flex items-center space-x-1 text-xs py-2">
-            <span className="text-slate-500 font-bold mr-2 text-[10px] uppercase">NODES:</span>
-            {navLinks.map((link) => (
-              <button
-                key={link.url}
-                onClick={() => {
-                  soundEngine.playKeyClick();
-                  navigateUrl(link.url);
-                }}
-                className={`px-3 py-1.5 rounded-lg border transition-all truncate font-bold text-xs whitespace-nowrap ${
-                  currentUrl.startsWith(link.url)
-                    ? 'bg-emerald-500 text-black border-emerald-400 shadow-md'
-                    : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:border-slate-700'
-                }`}
-              >
-                {link.name}
-              </button>
-            ))}
-          </div>
-        </nav>
       </header>
 
-      {/* Main Website Content Area */}
-      <main className="max-w-7xl w-full mx-auto px-4 py-8 flex-1 flex flex-col lg:flex-row gap-8">
-        {/* Main Article & Browser Viewport */}
-        <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl overflow-hidden min-h-[600px]">
+      {/* 90s Web 1.0 WordArt Header & Ticker Bar */}
+      <div className="bg-black border-b-2 border-cyan-400 py-4 px-4 text-center space-y-2">
+        <h1 className="text-3xl md:text-5xl font-black tracking-wider uppercase wordart-3d">
+          THE LAST WEBSITE ON EARTH
+        </h1>
+        <p className="text-xs text-yellow-300 font-mono tracking-widest uppercase">
+          ★ SURVIVING DIGITAL INTERNET ARCHIVE (2087) ★
+        </p>
+
+        {/* Web 1.0 Category Navigation Bar */}
+        <nav className="pt-2 flex flex-wrap justify-center gap-1 max-w-5xl mx-auto font-mono text-xs">
+          {navLinks.map((link) => (
+            <button
+              key={link.url}
+              onClick={() => {
+                soundEngine.playKeyClick();
+                navigateUrl(link.url);
+              }}
+              className={`px-3 py-1 font-bold rounded border transition-colors ${
+                currentUrl.startsWith(link.url)
+                  ? 'bg-yellow-400 text-black border-white shadow-[0_0_10px_#ffff00]'
+                  : 'bg-slate-900 text-cyan-300 border-cyan-400/50 hover:bg-cyan-900 hover:text-white'
+              }`}
+            >
+              {link.name}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl w-full mx-auto px-4 py-6 flex-1 flex flex-col lg:flex-row gap-6">
+        {/* Main Graphical Web Page View */}
+        <div className="flex-1 bg-black border-2 border-cyan-400 rounded-xl p-4 md:p-6 shadow-[0_0_25px_rgba(0,255,255,0.15)] overflow-hidden min-h-[600px]">
           <BrowserWindow />
         </div>
 
-        {/* Telemetry & Investigation Sidebar */}
+        {/* Left/Right Web 1.0 Telemetry Sidebar */}
         <PortalSidebar onOpenDrawer={(tab) => setActiveDrawerTab(tab)} />
       </main>
 
-      {/* Footer */}
-      <footer className="w-full bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500 font-mono">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <span>THE LAST WEBSITE ON EARTH &copy; 2087 RECOVERY ARCHIVE</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setActiveDrawerTab('terminal')}
-              className="hover:text-emerald-400 flex items-center space-x-1"
-            >
-              <TermIcon className="w-3.5 h-3.5" />
-              <span>TERMINAL CLI</span>
+      {/* Web 1.0 Footer */}
+      <footer className="w-full bg-[#c0c0c0] text-black border-t-2 border-[#404040] py-3 px-4 text-center font-mono text-xs">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>THE LAST WEBSITE ON EARTH &copy; 2087 ARCHIVE</span>
+          <div className="flex items-center space-x-4 font-bold">
+            <button onClick={() => setActiveDrawerTab('terminal')} className="hover:underline text-blue-900">
+              Terminal CLI
             </button>
-            <button
-              onClick={() => setActiveDrawerTab('radio')}
-              className="hover:text-amber-400 flex items-center space-x-1"
-            >
-              <Radio className="w-3.5 h-3.5" />
-              <span>RADIO SCANNER</span>
+            <button onClick={() => setActiveDrawerTab('radio')} className="hover:underline text-blue-900">
+              440MHz Radio
             </button>
           </div>
         </div>
       </footer>
 
-      {/* Slide-Out Investigation Drawer */}
+      {/* Slide-out Investigation Drawer */}
       {activeDrawerTab && (
         <div className="fixed inset-0 z-[200] flex justify-end bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-3xl h-full bg-slate-950 border-l-2 border-emerald-500/40 p-6 flex flex-col justify-between shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-              <h2 className="text-lg font-bold text-emerald-400 uppercase">
-                INVESTIGATION DRAWER // {activeDrawerTab}
+          <div className="w-full max-w-3xl h-full bg-black border-l-4 border-yellow-400 p-6 flex flex-col justify-between font-mono">
+            <div className="flex items-center justify-between border-b border-cyan-400 pb-3 mb-4">
+              <h2 className="text-lg font-bold text-yellow-300 uppercase">
+                INVESTIGATION TOOL // {activeDrawerTab}
               </h2>
-              <button
-                onClick={() => setActiveDrawerTab(null)}
-                className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
-              >
+              <button onClick={() => setActiveDrawerTab(null)} className="p-1 hover:bg-yellow-400 hover:text-black rounded text-cyan-300">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -210,7 +217,7 @@ export const PortalShell: React.FC = () => {
         </div>
       )}
 
-      {/* Settings Config Modal */}
+      {/* Config Modal */}
       {showSettingsModal && <SettingsModal onClose={() => setShowSettingsModal(false)} />}
     </div>
   );
