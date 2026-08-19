@@ -31,9 +31,10 @@ export interface WebPageData {
   content: string; // Markdown or rich HTML layout identifier
   links?: { title: string; url: string }[];
   evidenceIds?: string[];
+  discoveryId?: string;
   requiresDiscovery?: boolean;
   hiddenClue?: string;
-  audioLog?: string; // Optional audio transcript
+  audioLog?: string;
 }
 
 export interface WebsiteData {
@@ -54,6 +55,26 @@ export interface EvidenceItem {
   connectedTo: string[]; // Related website domains or evidence IDs
   tags: string[];
   unlockedAt?: number;
+}
+
+export interface ContradictionItem {
+  id: string;
+  title: string;
+  sourceA: { title: string; url: string; statement: string };
+  sourceB: { title: string; url: string; statement: string };
+  description: string;
+  discovered: boolean;
+}
+
+export interface DiscoveryCard {
+  id: string; // e.g. DISCOVERY-041
+  title: string;
+  timestamp: string;
+  source: string;
+  status: 'VERIFIED' | 'UNVERIFIED' | 'CRITICAL' | 'CLASSIFIED';
+  summary: string;
+  shareText: string;
+  unlocked: boolean;
 }
 
 export interface Person {
@@ -101,7 +122,7 @@ export interface FSNode {
 export interface OSWindow {
   id: string;
   title: string;
-  type: 'browser' | 'explorer' | 'evidence' | 'notebook' | 'terminal' | 'radio' | 'settings' | 'credits';
+  type: 'browser' | 'explorer' | 'evidence' | 'notebook' | 'terminal' | 'radio' | 'settings' | 'credits' | 'debug';
   x: number;
   y: number;
   width: number;

@@ -1,4 +1,108 @@
-import { WebsiteData, EvidenceItem, TimelineEvent, Person, Organization, FSNode, StoryEnding } from '../types/game';
+import { WebsiteData, EvidenceItem, TimelineEvent, Person, Organization, FSNode, StoryEnding, ContradictionItem, DiscoveryCard } from '../types/game';
+
+export const initialContradictions: ContradictionItem[] = [
+  {
+    id: 'CONTRADICTION #001',
+    title: 'Project Echo Launch Date Discrepancy',
+    sourceA: {
+      title: 'Aurora Energy Official Press Release',
+      url: 'http://aurora-energy.net',
+      statement: 'Project Echo phase 3 calibration completed August 01, 2087 with 99.4% efficiency.',
+    },
+    sourceB: {
+      title: 'Executive Order #804 Classified Directives',
+      url: 'http://gov.archive.sys/emergency/order-804',
+      statement: 'Full power output authorization signed October 28, 2087 following ionospheric failure.',
+    },
+    description: 'Aurora Energy claimed Project Echo was running routinely in August, but federal emergency authorization was only requested in late October after atmospheric carrier waves locked.',
+    discovered: true,
+  },
+  {
+    id: 'CONTRADICTION #002',
+    title: 'Dr. Elena Rostova Disappearance & Credential Timeline',
+    sourceA: {
+      title: 'WorldNet News Correspondent Log',
+      url: 'http://worldnet.news/article/satellite-disruption',
+      statement: 'Dr. Rostova observatory access revoked by federal order on August 15, 2087.',
+    },
+    sourceB: {
+      title: 'Archive Social Timeline Feed',
+      url: 'http://archive.social',
+      statement: 'Dr. Rostova published active neural frequency updates on October 15, 2087.',
+    },
+    description: 'Federal records state Dr. Rostova was removed in August, but her personal social updates continued through October from inside Aurora facility sub-networks.',
+    discovered: true,
+  },
+  {
+    id: 'CONTRADICTION #003',
+    title: 'Atmospheric Event vs Weather Telemetry Physics',
+    sourceA: {
+      title: 'WorldNet News Article',
+      url: 'http://worldnet.news/article/atmospheric-phenomena',
+      statement: 'Meteorological agencies insist violet skies are high-altitude ice crystal solar reflections.',
+    },
+    sourceB: {
+      title: 'Global Weather Radar Status Report',
+      url: 'http://globalweather.gov',
+      statement: 'Barometric pressure grids dropped to 0 hPa without solar radiation or thermal changes.',
+    },
+    description: 'Public news outlets reported harmless ice crystals, while internal weather sensors recorded a physical drop in atmospheric pressure caused by electromagnetic ionization.',
+    discovered: true,
+  }
+];
+
+export const initialDiscoveryCards: Record<string, DiscoveryCard> = {
+  'DISCOVERY-001': {
+    id: 'DISCOVERY-001',
+    title: 'NETWORK UPLINK RESTORED',
+    timestamp: '2087-11-03 23:59',
+    source: 'ORBIT RECOVERY KERNEL',
+    status: 'VERIFIED',
+    summary: 'First surviving digital carrier node detected at 440MHz frequency. Local CRT workstation online.',
+    shareText: 'THE LAST WEBSITE ON EARTH // DISCOVERY-001: First surviving digital node detected at 440MHz frequency.',
+    unlocked: true,
+  },
+  'DISCOVERY-014': {
+    id: 'DISCOVERY-014',
+    title: 'SATELLITE TELEMETRY CORRELATION',
+    timestamp: '2087-08-14 14:10',
+    source: 'WORLDNET NEWS ARCHIVE',
+    status: 'VERIFIED',
+    summary: 'Satellite drops coincided precisely with Aurora Energy 4.2 Terawatt Echo harmonic pulses.',
+    shareText: 'THE LAST WEBSITE ON EARTH // DISCOVERY-014: Satellite drops coincided with 4.2 Terawatt Aurora pulse.',
+    unlocked: true,
+  },
+  'DISCOVERY-041': {
+    id: 'DISCOVERY-041',
+    title: 'CLASSIFIED INCIDENT LOG #88-B',
+    timestamp: '2087-09-18 04:12',
+    source: 'AURORA INTERNAL SYSTEM',
+    status: 'CRITICAL',
+    summary: 'Test Subject Alpha dematerialized into 440MHz carrier wave during Echo high-power resonance test.',
+    shareText: 'THE LAST WEBSITE ON EARTH // DISCOVERY-041: Matter dematerialization verified in Aurora Incident Log #88-B.',
+    unlocked: true,
+  },
+  'DISCOVERY-067': {
+    id: 'DISCOVERY-067',
+    title: 'EXECUTIVE ORDER #804 DECRYPTED',
+    timestamp: '2087-10-28 18:00',
+    source: 'FEDERAL DEFENSE ARCHIVE',
+    status: 'CLASSIFIED',
+    summary: 'Federal cabinet authorized total biological citizen conversion into atmospheric frequency matrix.',
+    shareText: 'THE LAST WEBSITE ON EARTH // DISCOVERY-067: Executive Order #804 decrypted via ECHO-2087-VOID.',
+    unlocked: false,
+  },
+  'DISCOVERY-089': {
+    id: 'DISCOVERY-089',
+    title: 'WORKSTATION NODE 001 SIGNAL INTERCEPT',
+    timestamp: '2087-11-03 23:59',
+    source: 'DEEP SIGNAL MATRIX',
+    status: 'CRITICAL',
+    summary: 'Node 001 active. You are the Archivist presiding over 8.2 billion digitized human minds.',
+    shareText: 'THE LAST WEBSITE ON EARTH // DISCOVERY-089: Node 001 reached. You are the Archivist.',
+    unlocked: false,
+  }
+};
 
 export const initialWebsites: Record<string, WebsiteData> = {
   'http://worldnet.news': {
@@ -54,6 +158,7 @@ The Federal Defense Oversight Committee has convened behind locked doors followi
 - **Dr_Aris**: *Look at the temperature readings on Global Weather. The numbers don't match physics.*
 `,
         evidenceIds: ['ev-satellite-01', 'ev-echo-01'],
+        discoveryId: 'DISCOVERY-014',
       },
       '/article/satellite-disruption': {
         id: 'wn-sat',
@@ -73,7 +178,7 @@ Dr. Elena Rostova of the Global Observatory stated:
 Shortly after making this statement, Dr. Rostova's observatory access credentials were revoked by federal order.
 
 ### Related Documents:
-- [Aurora Energy Press Statement](http://aurora-energy.net/press/echo-launch)
+- [Aurora Energy Press Statement](http://aurora-energy.net)
 - [Government Emergency Order #804](http://gov.archive.sys/emergency/order-804)
 `,
         evidenceIds: ['ev-echo-01', 'ev-rostova-01'],
@@ -166,6 +271,7 @@ Welcome to the forefront of clean, infinite planetary energy generation.
 Use command \`decrypt ECHO-2087-VOID\` in the terminal to unlock encrypted Government Archives.
 `,
         evidenceIds: ['ev-echo-truth', 'ev-key-01'],
+        discoveryId: 'DISCOVERY-041',
         hiddenClue: 'ECHO-2087-VOID',
       }
     }
@@ -211,7 +317,7 @@ Use command \`decrypt ECHO-2087-VOID\` in the terminal to unlock encrypted Gover
         url: 'http://globalweather.gov/archive/alerts',
         title: 'Emergency Broadcast Archive',
         content: `
-# EMERGENCY BROADCAST ARCHIVE — FINAL RECORDings
+# EMERGENCY BROADCAST ARCHIVE — FINAL RECORDINGS
 
 ### BROADCAST #99-C (October 24, 2087 - 23:59 UTC)
 THIS IS NOT A WEATHER EVENT.
@@ -400,6 +506,7 @@ Workstation **NODE 001** shall remain powered via solar-orbital tether to serve 
 URL: \`http://deep-signal.node001.net\`
 `,
         evidenceIds: ['ev-order804'],
+        discoveryId: 'DISCOVERY-067',
       }
     }
   },
@@ -448,6 +555,84 @@ If anyone finds this computer in the future... we didn't die. We were invited in
     }
   },
 
+  'http://solitude-journal.org': {
+    id: 'solitude',
+    domain: 'solitude-journal.org',
+    name: 'SOLITUDE ARCTIC OBSERVATORY DIARY',
+    tagline: 'Station 14 — Last Human Transmission Logs',
+    theme: 'blog',
+    pages: {
+      '/': {
+        id: 'sol-home',
+        domain: 'solitude-journal.org',
+        url: 'http://solitude-journal.org',
+        title: 'Solitude Observatory — Arctic Log',
+        content: `
+# SOLITUDE OBSERVERS ARCHIVE (STATION 14)
+
+**Observer:** Dr. Henrik Lindqvist  
+**Location:** Svalbard Observatory Complex  
+
+---
+
+### Log 89 — October 20, 2087
+The polar night has arrived early. But it isn't dark. The sky above the glacier is glowing with continuous green and violet static lines that match the 440MHz frequency on our shortwave radio.
+
+---
+
+### Log 94 — October 31, 2087
+All supply vessels failed to arrive. I tried connecting to the Norwegian government network, but every page redirects to an automated system message saying *'Citizen accounts migrated to Echo Carrier Matrix.'*
+
+---
+
+### Log 99 — November 03, 2087
+The generator is running low. I am leaving this workstation powered on connected to the satellite dish. If you hear my voice in the static... I am already in the sky.
+`,
+        evidenceIds: ['ev-solitude-01'],
+      }
+    }
+  },
+
+  'http://retro-forum.net': {
+    id: 'retroforum',
+    domain: 'retro-forum.net',
+    name: 'RETRO TECH COMMUNITY FORUM',
+    tagline: 'Discussion Board for Legacy Hardware & RF Engineering',
+    theme: 'forum',
+    pages: {
+      '/': {
+        id: 'rf-home',
+        domain: 'retro-forum.net',
+        url: 'http://retro-forum.net',
+        title: 'Retro Tech Forum — Discussion Threads',
+        content: `
+# RETRO TECH FORUM (vBulletin 4.2)
+
+> **BOARD STATUS**: 1,480 Active Threads | Archived read-only mode active.
+
+---
+
+### THREAD: [URGENT] 440MHz Signal Hum Coming from Speakers?
+*Started by: HamRadio_Dave (October 14, 2087)*
+
+> **HamRadio_Dave**: Anyone else picking up a 440MHz sine wave on their vintage ham rigs? It's not noise—it's structured data. It sounds like thousands of voices stacked on top of each other!
+> 
+> **BytePusher**: Same here in London. My CRT monitor flickers in sync with the signal. Aurora Energy claims it's grid testing, but power lines don't emit 440MHz harmonic carrier waves!
+> 
+> **SignalHunter**: Check out the official Government archive order #804. They're preparing to shut down physical power grids permanently!
+
+---
+
+### THREAD: Aurora Facility Echo-Prime Evacuation?
+*Started by: TechCorrespondent (September 20, 2087)*
+
+> **TechCorrespondent**: My contact at Echo-Prime says test subject Alpha vanished from the lab floor during a 4.0 Terawatt test. The lab was sealed by military escort right after.
+`,
+        evidenceIds: ['ev-forum-01'],
+      }
+    }
+  },
+
   'http://deep-signal.node001.net': {
     id: 'nodesignal',
     domain: 'deep-signal.node001.net',
@@ -482,6 +667,7 @@ You are the designated **Archivist**.
 4. **[ENDING D — UNKNOWN]**: Enter standby mode and merge your workstation into Node 001.
 `,
         evidenceIds: ['ev-final-node'],
+        discoveryId: 'DISCOVERY-089',
       }
     }
   }
@@ -624,6 +810,24 @@ export const initialEvidence: EvidenceItem[] = [
     tags: ['JOURNAL', 'HUMAN STORY'],
   },
   {
+    id: 'ev-solitude-01',
+    sourceTitle: 'Solitude Observatory Diary',
+    sourceUrl: 'http://solitude-journal.org',
+    date: '2087-11-03',
+    keyInfo: 'Arctic observer Dr. Lindqvist left observatory station running connected to atmospheric Dish.',
+    connectedTo: ['ev-final-node'],
+    tags: ['ARCTIC', 'OBSERVATORY', 'HUMAN STORY'],
+  },
+  {
+    id: 'ev-forum-01',
+    sourceTitle: 'Retro Tech Forum Post',
+    sourceUrl: 'http://retro-forum.net',
+    date: '2087-10-14',
+    keyInfo: 'Radio engineers intercepted thousands of structured voices inside 440MHz sine wave.',
+    connectedTo: ['ev-satellite-01'],
+    tags: ['FORUM', 'HAM RADIO', 'VOICES'],
+  },
+  {
     id: 'ev-final-node',
     sourceTitle: 'The Final Website — Node 001',
     sourceUrl: 'http://deep-signal.node001.net',
@@ -707,7 +911,7 @@ export const initialPeople: Person[] = [
     role: 'Chief Executive Officer',
     organization: 'Aurora Energy Global',
     lastSeen: '2087-10-12',
-    status: 'UNKNOWN',
+    status: 'DIGITIZED',
     notes: 'Architect of Project Echo. Believed to be the first human mind transferred into 440MHz signal state.',
   },
   {
@@ -736,6 +940,15 @@ export const initialPeople: Person[] = [
     lastSeen: '2087-09-18',
     status: 'DECEASED',
     notes: 'Co-creator of Horizon-7. Attempted to halt Project Echo before array locked.',
+  },
+  {
+    id: 'p-lindqvist',
+    name: 'Dr. Henrik Lindqvist',
+    role: 'Polar Observer',
+    organization: 'Solitude Observatory Station 14',
+    lastSeen: '2087-11-03',
+    status: 'UNKNOWN',
+    notes: 'Last human observer in the Arctic complex. Maintained dish connection to 440MHz signal.',
   }
 ];
 

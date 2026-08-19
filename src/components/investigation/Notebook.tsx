@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../store/useGameStore';
+import { ContradictionsView } from './ContradictionsView';
 import { soundEngine } from '../../audio/soundEngine';
-import { BookOpen, Calendar, Users, Building, FileEdit, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { initialContradictions } from '../../data/storyData';
+import { BookOpen, Calendar, Users, Building, FileEdit, Plus, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export const Notebook: React.FC = () => {
   const timeline = useGameStore((state) => state.timeline);
@@ -13,7 +15,7 @@ export const Notebook: React.FC = () => {
   const addTheory = useGameStore((state) => state.addTheory);
   const removeTheory = useGameStore((state) => state.removeTheory);
 
-  const [activeTab, setActiveTab] = useState<'timeline' | 'people' | 'orgs' | 'theories' | 'scratchpad'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'people' | 'orgs' | 'contradictions' | 'theories' | 'scratchpad'>('timeline');
   const [newTheoryInput, setNewTheoryInput] = useState('');
 
   const handleTabChange = (tab: any) => {
@@ -35,6 +37,18 @@ export const Notebook: React.FC = () => {
         >
           <Calendar className="w-3.5 h-3.5" />
           <span>TIMELINE</span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('contradictions')}
+          className={`flex items-center space-x-1.5 px-3 py-1 rounded text-xs transition-colors ${
+            activeTab === 'contradictions'
+              ? 'bg-amber-400 text-black font-bold'
+              : 'hover:bg-crt-green/20 text-amber-400'
+          }`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>CONTRADICTIONS ({initialContradictions.length})</span>
         </button>
 
         <button
@@ -93,7 +107,6 @@ export const Notebook: React.FC = () => {
           <div className="space-y-4 relative border-l-2 border-crt-green/30 ml-4 pl-4 py-2">
             {timeline.map((event) => (
               <div key={event.id} className="relative">
-                {/* Point Node */}
                 <div
                   className={`absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full border-2 ${
                     event.discovered
@@ -122,6 +135,11 @@ export const Notebook: React.FC = () => {
               </div>
             ))}
           </div>
+        )}
+
+        {/* CONTRADICTIONS TAB */}
+        {activeTab === 'contradictions' && (
+          <ContradictionsView contradictions={initialContradictions} />
         )}
 
         {/* PEOPLE TAB */}

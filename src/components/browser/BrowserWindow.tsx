@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
-import { initialWebsites } from '../../data/storyData';
+import { initialWebsites, initialDiscoveryCards } from '../../data/storyData';
 import { soundEngine } from '../../audio/soundEngine';
 import { NexusSearch } from './NexusSearch';
+import { DiscoveryModal } from '../investigation/DiscoveryModal';
+import { DiscoveryCard } from '../../types/game';
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,7 +13,6 @@ import {
   Bookmark,
   Search,
   Globe,
-  Lock,
   Wifi,
   ExternalLink,
   FileQuestion,
@@ -29,6 +30,7 @@ export const BrowserWindow: React.FC = () => {
   const [inputUrl, setInputUrl] = useState(currentUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('CONNECTED');
+  const [activeDiscoveryCard, setActiveDiscoveryCard] = useState<DiscoveryCard | null>(null);
 
   useEffect(() => {
     setInputUrl(currentUrl);
@@ -50,7 +52,6 @@ export const BrowserWindow: React.FC = () => {
     }
   };
 
-  // Find matching website page
   const parsedUrl = new URL(currentUrl.startsWith('http') ? currentUrl : `http://${currentUrl}`);
   const siteDomain = parsedUrl.host || parsedUrl.pathname.replace('/', '');
   const pagePath = parsedUrl.pathname || '/';
@@ -58,20 +59,20 @@ export const BrowserWindow: React.FC = () => {
   const matchedSite = Object.values(initialWebsites).find((s) => s.domain === siteDomain);
   const matchedPage = matchedSite?.pages[pagePath] || matchedSite?.pages['/'];
 
-  // Check evidence triggers when viewing specific pages
   useEffect(() => {
     if (matchedPage?.evidenceIds) {
       matchedPage.evidenceIds.forEach((evId) => discoverEvidence(evId));
     }
+    if (matchedPage?.discoveryId && initialDiscoveryCards[matchedPage.discoveryId]) {
+      setActiveDiscoveryCard(initialDiscoveryCards[matchedPage.discoveryId]);
+    }
   }, [matchedPage, discoverEvidence]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-crt-dark text-crt-green font-mono text-xs select-none">
+    <div className="w-full h-full flex flex-col bg-crt-dark text-crt-green font-mono text-xs select-none relative">
       {/* Retro Browser Chrome Top Bar */}
       <div className="bg-stone-900 border-b-2 border-crt-green/40 p-2 space-y-2">
-        {/* Row 1: Controls & Address Bar */}
         <div className="flex items-center space-x-2">
-          {/* Back/Forward/Reload */}
           <div className="flex items-center space-x-1">
             <button
               onClick={browserBack}
@@ -103,7 +104,6 @@ export const BrowserWindow: React.FC = () => {
             </button>
           </div>
 
-          {/* URL Address Input */}
           <form onSubmit={handleUrlSubmit} className="flex-1 flex items-center">
             <div className="w-full flex items-center px-3 py-1 bg-black border border-crt-green/60 rounded shadow-inner">
               <Globe className="w-3.5 h-3.5 text-crt-green mr-2" />
@@ -119,7 +119,6 @@ export const BrowserWindow: React.FC = () => {
             </div>
           </form>
 
-          {/* Nexus Search Shortcut & Bookmark */}
           <button
             onClick={() => navigateUrl('http://nexus.search')}
             className="p-1.5 bg-crt-green/20 hover:bg-crt-green hover:text-black rounded text-xs flex items-center space-x-1 font-bold"
@@ -137,14 +136,12 @@ export const BrowserWindow: React.FC = () => {
             <Bookmark className="w-4 h-4" />
           </button>
 
-          {/* Network LED Activity Indicator */}
           <div className="flex items-center space-x-1 px-2 py-1 bg-black border border-crt-green/30 rounded">
             <Wifi className={`w-3 h-3 ${isLoading ? 'text-amber-400 animate-pulse' : 'text-crt-green'}`} />
             <span className="text-[9px] text-crt-green/70 hidden md:inline">440MHz</span>
           </div>
         </div>
 
-        {/* Row 2: Bookmarks Bar */}
         <div className="flex items-center space-x-2 text-[10px] overflow-x-auto pt-1 border-t border-crt-green/10">
           <span className="text-crt-green/50 font-bold">BOOKMARKS:</span>
           {bookmarks.map((bmUrl) => (
@@ -169,7 +166,6 @@ export const BrowserWindow: React.FC = () => {
       {/* Main Page View Container */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-crt-dark">
         {isLoading ? (
-          /* Loading State */
           <div className="h-full flex flex-col items-center justify-center space-y-4 text-crt-green">
             <div className="w-12 h-12 border-4 border-crt-green border-t-transparent rounded-full animate-spin" />
             <div className="text-xs font-bold animate-pulse">{loadingText}</div>
@@ -178,12 +174,9 @@ export const BrowserWindow: React.FC = () => {
             </div>
           </div>
         ) : currentUrl === 'http://nexus.search' ? (
-          /* Search Engine View */
           <NexusSearch />
         ) : matchedPage ? (
-          /* Render Page Markdown / Rich Layout */
           <div className="max-w-4xl mx-auto space-y-6 select-text">
-            {/* Page Banner Header */}
             <div className="border-b-2 border-crt-green/40 pb-4">
               <div className="text-xs text-amber-400 font-bold tracking-widest uppercase mb-1">
                 {matchedSite?.name} — {matchedSite?.tagline}
@@ -193,7 +186,6 @@ export const BrowserWindow: React.FC = () => {
               </h1>
             </div>
 
-            {/* Markdown Text Render */}
             <div className="prose prose-invert max-w-none text-xs md:text-sm font-mono leading-relaxed space-y-4">
               {matchedPage.content.split('\n\n').map((paragraph, idx) => {
                 if (paragraph.startsWith('# ')) {
@@ -214,15 +206,8 @@ export const BrowserWindow: React.FC = () => {
                       {paragraph.replace('> ', '')}
                     </blockquote>
                   );
-                } else if (paragraph.startsWith('```')) {
-                  return (
-                    <pre key={idx} className="p-4 bg-black border border-crt-green/40 rounded text-crt-green text-xs font-mono overflow-x-auto">
-                      {paragraph.replace(/```text|```/g, '')}
-                    </pre>
-                  );
                 }
 
-                // Render hyperlinks in text
                 const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
                 const parts = [];
                 let lastIndex = 0;
@@ -258,30 +243,23 @@ export const BrowserWindow: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Custom 404 Page */
           <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-4 select-text">
             <FileQuestion className="w-16 h-16 text-amber-400 animate-bounce" />
             <h1 className="text-2xl font-bold text-red-400">404 — SURVIVING NODE NOT FOUND</h1>
             <p className="text-xs text-crt-green/80 max-w-md">
               The URL <span className="text-amber-400 font-bold">{currentUrl}</span> could not be reached across the ionospheric frequency matrix.
             </p>
-            <div className="p-4 border border-amber-400/40 bg-black/60 rounded text-left text-xs font-mono space-y-2 max-w-md">
-              <div className="text-amber-400 font-bold">ARCHIVAL CLUE SUGGESTION:</div>
-              <div>Try typing one of the following known surviving URLs:</div>
-              <ul className="list-disc list-inside text-crt-green/90 space-y-1">
-                <li>http://worldnet.news</li>
-                <li>http://aurora-energy.net</li>
-                <li>http://globalweather.gov</li>
-                <li>http://archive.social</li>
-                <li>http://helixbio.org</li>
-                <li>http://gov.archive.sys</li>
-                <li>http://blog.kyle-vance.me</li>
-                <li>http://deep-signal.node001.net</li>
-              </ul>
-            </div>
           </div>
         )}
       </div>
+
+      {/* Shareable Discovery Card Popup */}
+      {activeDiscoveryCard && (
+        <DiscoveryModal
+          card={activeDiscoveryCard}
+          onClose={() => setActiveDiscoveryCard(null)}
+        />
+      )}
     </div>
   );
 };
