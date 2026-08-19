@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useGameStore } from './store/useGameStore';
-import { CRTMonitor } from './components/crt/CRTMonitor';
-import { BootSequence } from './components/os/BootSequence';
-import { Desktop } from './components/os/Desktop';
+import { PortalShell } from './components/portal/PortalShell';
 import { EndingModal } from './components/endings/EndingModal';
 import { DebugOverlay } from './components/debug/DebugOverlay';
 
 export const App: React.FC = () => {
-  const bootState = useGameStore((state) => state.bootState);
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
@@ -21,14 +17,10 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <CRTMonitor>
-      {bootState === 'OFF' || bootState === 'BOOTING' ? (
-        <BootSequence />
-      ) : (
-        <Desktop />
-      )}
+    <>
+      <PortalShell />
       <EndingModal />
       {showDebug && <DebugOverlay onClose={() => setShowDebug(false)} />}
-    </CRTMonitor>
+    </>
   );
 };
