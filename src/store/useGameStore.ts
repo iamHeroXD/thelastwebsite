@@ -20,8 +20,8 @@ interface GameState {
 
   // Investigation & Evidence
   discoveredEvidence: EvidenceItem[];
-  evidenceConnections: [string, string][]; // Pairs of connected evidence IDs
-  archiveIntegrity: number; // 0 to 100%
+  evidenceConnections: [string, string][];
+  archiveIntegrity: number;
 
   // Notebook & Discovery Data
   timeline: TimelineEvent[];
@@ -82,12 +82,12 @@ interface GameState {
 const LOCAL_STORAGE_KEY = 'LAST_WEBSITE_EARTH_SAVE_V1';
 
 const defaultCRTSettings: CRTSettings = {
-  intensity: 0.75,
+  intensity: 0.65,
   brightness: 1.0,
   phosphorTheme: 'green',
   scanlines: true,
   chromatic: true,
-  flicker: true,
+  flicker: false, // Turned flicker false by default for maximum screen stability
   ghosting: true,
   curvedScreen: true,
   audioVolume: 0.8,
@@ -135,8 +135,8 @@ export const useGameStore = create<GameState>((set, get) => {
   ];
 
   return {
-    // Default boot state: always start powered ON and BOOTING for immediate display
-    bootState: savedData?.bootState && savedData.bootState !== 'OFF' ? savedData.bootState : 'BOOTING',
+    // Force default boot state to BROWSER so the website is immediately visible and playable!
+    bootState: 'BROWSER',
     crtSettings: savedData?.crtSettings || defaultCRTSettings,
 
     currentUrl: initialUrl,
@@ -439,7 +439,7 @@ export const useGameStore = create<GameState>((set, get) => {
     resetGame: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       set({
-        bootState: 'BOOTING',
+        bootState: 'BROWSER',
         crtSettings: defaultCRTSettings,
         currentUrl: 'http://worldnet.news',
         historyStack: ['http://worldnet.news'],

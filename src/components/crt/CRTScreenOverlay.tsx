@@ -5,16 +5,33 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
   const crtSettings = useGameStore((state) => state.crtSettings);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const themeColors = {
+  const themeHexMap = {
     green: '#00ff66',
     amber: '#ffb000',
     cyan: '#00e5ff',
     white: '#e5e5e5',
   };
 
-  const currentThemeColor = themeColors[crtSettings.phosphorTheme || 'green'];
+  const themeRgbaMap = {
+    green: 'rgba(0, 255, 102, 0.2)',
+    amber: 'rgba(255, 176, 0, 0.2)',
+    cyan: 'rgba(0, 229, 255, 0.2)',
+    white: 'rgba(229, 229, 229, 0.2)',
+  };
 
-  // Render scanlines and phosphor noise on HTML5 Canvas overlay
+  const themeDropShadowMap = {
+    green: 'rgba(0, 255, 102, 0.4)',
+    amber: 'rgba(255, 176, 0, 0.4)',
+    cyan: 'rgba(0, 229, 255, 0.4)',
+    white: 'rgba(229, 229, 229, 0.4)',
+  };
+
+  const currentThemeKey = crtSettings.phosphorTheme || 'green';
+  const currentThemeColor = themeHexMap[currentThemeKey] || '#00ff66';
+  const currentThemeRgba = themeRgbaMap[currentThemeKey] || 'rgba(0, 255, 102, 0.2)';
+  const currentThemeDropShadow = themeDropShadowMap[currentThemeKey] || 'rgba(0, 255, 102, 0.4)';
+
+  // Render scanlines and phosphor noise on HTML5 Canvas overlay safely
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -24,8 +41,10 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
     let animId: number;
 
     const resize = () => {
-      canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-      canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
+      if (canvas.parentElement) {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+      }
     };
     resize();
     window.addEventListener('resize', resize);
@@ -45,12 +64,14 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
 
         // Draw rolling scanline beam matched to phosphor theme
         const rollY = (frame * 1.5) % (canvas.height + 60) - 30;
-        const grad = ctx.createLinearGradient(0, rollY - 30, 0, rollY + 30);
-        grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-        grad.addColorStop(0.5, currentThemeColor + '22');
-        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, rollY - 30, canvas.width, 60);
+        try {
+          const grad = ctx.createLinearGradient(0, Math.max(0, rollY - 30), 0, Math.min(canvas.height, rollY + 30));
+          grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+          grad.addColorStop(0.5, currentThemeRgba);
+          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, rollY - 30, canvas.width, 60);
+        } catch (e) {}
       }
 
       // Draw subtle noise grain
@@ -73,7 +94,7 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
     };
-  }, [crtSettings, currentThemeColor]);
+  }, [crtSettings, currentThemeRgba]);
 
   const intensityVal = crtSettings.intensity;
   const brightnessVal = crtSettings.brightness;
@@ -89,9 +110,9 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
           crtSettings.flicker ? 'animate-flicker' : ''
         }`}
         style={{
-          filter: `brightness(${brightnessVal}) contrast(${1.0 + intensityVal * 0.15}) drop-shadow(0 0 ${
-            intensityVal * 12
-          }px ${currentThemeColor}66)`,
+          filter: `brightness(${brightnessVal}) contrast(${1.0 + intensityVal * 0.15}) drop-shadow(0 0 ${Math.round(
+            intensityVal * 10
+          )}px ${currentThemeDropShadow})`,
           transform: crtSettings.reducedMotion ? 'none' : 'scale(0.995)',
         }}
       >
