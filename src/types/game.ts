@@ -1,15 +1,21 @@
 export type BootState = 'OFF' | 'BOOTING' | 'DESKTOP' | 'BROWSER';
 
+export type CRTPhosphorTheme = 'green' | 'amber' | 'cyan' | 'white';
+
 export interface CRTSettings {
   intensity: number; // 0.0 to 1.0
   brightness: number; // 0.5 to 1.5
+  phosphorTheme: CRTPhosphorTheme;
   scanlines: boolean;
   chromatic: boolean;
   flicker: boolean;
+  ghosting: boolean;
+  curvedScreen: boolean;
   audioVolume: number; // 0.0 to 1.0
   ambientVolume: number;
   uiVolume: number;
   humVolume: number;
+  musicVolume: number;
   muted: boolean;
   reducedMotion: boolean;
 }
@@ -27,6 +33,7 @@ export interface WebPageData {
   evidenceIds?: string[];
   requiresDiscovery?: boolean;
   hiddenClue?: string;
+  audioLog?: string; // Optional audio transcript
 }
 
 export interface WebsiteData {
@@ -34,7 +41,7 @@ export interface WebsiteData {
   domain: string;
   name: string;
   tagline: string;
-  theme: 'news' | 'corporate' | 'weather' | 'social' | 'biotech' | 'government' | 'blog' | 'secret';
+  theme: 'news' | 'corporate' | 'weather' | 'social' | 'biotech' | 'government' | 'blog' | 'forum' | 'secret';
   pages: Record<string, WebPageData>; // path -> page
 }
 
@@ -55,7 +62,7 @@ export interface Person {
   role: string;
   organization: string;
   lastSeen: string;
-  status: 'MISSING' | 'UNKNOWN' | 'DECEASED' | 'CLASSIFIED';
+  status: 'MISSING' | 'UNKNOWN' | 'DECEASED' | 'CLASSIFIED' | 'DIGITIZED';
   notes: string;
 }
 
@@ -94,7 +101,7 @@ export interface FSNode {
 export interface OSWindow {
   id: string;
   title: string;
-  type: 'browser' | 'explorer' | 'evidence' | 'notebook' | 'terminal' | 'settings' | 'credits';
+  type: 'browser' | 'explorer' | 'evidence' | 'notebook' | 'terminal' | 'radio' | 'settings' | 'credits';
   x: number;
   y: number;
   width: number;

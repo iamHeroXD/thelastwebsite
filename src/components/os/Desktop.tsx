@@ -7,6 +7,7 @@ import { NodeGraph } from '../investigation/NodeGraph';
 import { EvidenceBoard } from '../investigation/EvidenceBoard';
 import { Notebook } from '../investigation/Notebook';
 import { TerminalWindow } from '../terminal/TerminalWindow';
+import { RadioScanner } from './RadioScanner';
 import { SettingsModal } from '../crt/SettingsModal';
 import { soundEngine } from '../../audio/soundEngine';
 import {
@@ -15,10 +16,11 @@ import {
   Network,
   BookOpen,
   Terminal as TermIcon,
+  Radio,
   Sliders,
-  Info,
   Shield,
   Cpu,
+  Camera,
 } from 'lucide-react';
 
 export const Desktop: React.FC = () => {
@@ -29,6 +31,7 @@ export const Desktop: React.FC = () => {
 
   const [showSettings, setShowSettings] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [flashNotification, setFlashNotification] = useState('');
 
   const desktopIcons = [
     {
@@ -122,6 +125,24 @@ export const Desktop: React.FC = () => {
         }),
     },
     {
+      id: 'radio',
+      title: 'RADIO SCANNER',
+      icon: Radio,
+      color: 'text-orange-400',
+      action: () =>
+        openWindow({
+          id: 'radio',
+          title: '440MHz ATMOSPHERIC RECEIVER',
+          type: 'radio',
+          x: 260,
+          y: 140,
+          width: 600,
+          height: 420,
+          isMinimized: false,
+          isMaximized: false,
+        }),
+    },
+    {
       id: 'settings',
       title: 'SYSTEM CONFIG',
       icon: Sliders,
@@ -129,6 +150,12 @@ export const Desktop: React.FC = () => {
       action: () => setShowSettings(true),
     },
   ];
+
+  const handleCaptureScreen = () => {
+    soundEngine.playDiscovery();
+    setFlashNotification('CRT SCREENSHOT SNAPSHOT CAPTURED TO LOCAL MEMORY');
+    setTimeout(() => setFlashNotification(''), 3000);
+  };
 
   return (
     <div className="relative w-full h-full bg-crt-bg overflow-hidden flex flex-col justify-between select-none font-mono">
@@ -143,8 +170,14 @@ export const Desktop: React.FC = () => {
         </p>
       </div>
 
+      {flashNotification && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-amber-400 text-black font-bold text-xs rounded shadow-lg animate-bounce">
+          {flashNotification}
+        </div>
+      )}
+
       {/* Desktop Grid Icons */}
-      <div className="relative z-10 p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-xl">
+      <div className="relative z-10 p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 max-w-2xl">
         {desktopIcons.map((ico) => {
           const IconComp = ico.icon;
           return (
@@ -176,6 +209,7 @@ export const Desktop: React.FC = () => {
             {win.type === 'evidence' && <EvidenceBoard />}
             {win.type === 'notebook' && <Notebook />}
             {win.type === 'terminal' && <TerminalWindow />}
+            {win.type === 'radio' && <RadioScanner />}
           </WindowShell>
         ))}
       </div>
@@ -210,12 +244,22 @@ export const Desktop: React.FC = () => {
           </div>
         </div>
 
-        {/* Taskbar Clock & System Diagnostic */}
-        <div className="flex items-center space-x-4 text-xs text-crt-green/80">
+        {/* Taskbar Tools & Clock */}
+        <div className="flex items-center space-x-3 text-xs text-crt-green/80">
+          <button
+            onClick={handleCaptureScreen}
+            className="p-1 hover:bg-crt-green hover:text-black rounded transition-colors text-crt-green flex items-center space-x-1 text-[11px]"
+            title="Capture Screenshot"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">SNAP</span>
+          </button>
+
           <div className="hidden sm:flex items-center space-x-1">
             <span>INTEGRITY:</span>
             <span className="text-amber-400 font-bold">{archiveIntegrity}%</span>
           </div>
+
           <div className="px-2 py-0.5 bg-black border border-crt-green/30 rounded font-mono text-[11px] text-crt-green font-bold">
             2087-11-03 23:59 UTC
           </div>

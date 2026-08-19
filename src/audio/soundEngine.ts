@@ -1,18 +1,26 @@
-// Procedural Web Audio Engine for CRT Monitor & Orbit OS
+// Procedural Web Audio Synthesizer Engine for CRT Monitor & Orbit OS
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private humOsc: OscillatorNode | null = null;
   private humGain: GainNode | null = null;
-  private ambientOsc1: OscillatorNode | null = null;
-  private ambientOsc2: OscillatorNode | null = null;
-  private ambientGain: GainNode | null = null;
+  
+  // Ambient Synth Pad Generators
+  private padOscs: OscillatorNode[] = [];
+  private padGain: GainNode | null = null;
+  private lfoOsc: OscillatorNode | null = null;
+
+  // Radio Static Generator
+  private radioNoiseNode: AudioBufferSourceNode | null = null;
+  private radioGain: GainNode | null = null;
 
   public masterVolume: number = 0.8;
-  public humVolume: number = 0.5;
+  public humVolume: number = 0.4;
   public uiVolume: number = 0.7;
-  public ambientVolume: number = 0.6;
+  public ambientVolume: number = 0.5;
+  public musicVolume: number = 0.6;
   public isMuted: boolean = false;
+  public isRadioActive: boolean = false;
 
   private initCtx() {
     if (!this.ctx) {
@@ -26,11 +34,12 @@ class SoundEngine {
     }
   }
 
-  public updateVolumes(master: number, hum: number, ui: number, ambient: number, muted: boolean) {
+  public updateVolumes(master: number, hum: number, ui: number, ambient: number, music: number, muted: boolean) {
     this.masterVolume = master;
     this.humVolume = hum;
     this.uiVolume = ui;
     this.ambientVolume = ambient;
+    this.musicVolume = music;
     this.isMuted = muted;
 
     if (this.humGain && this.ctx) {
@@ -38,9 +47,9 @@ class SoundEngine {
       this.humGain.gain.setTargetAtTime(targetHum, this.ctx.currentTime, 0.1);
     }
 
-    if (this.ambientGain && this.ctx) {
-      const targetAmb = this.isMuted ? 0 : this.masterVolume * this.ambientVolume * 0.04;
-      this.ambientGain.gain.setTargetAtTime(targetAmb, this.ctx.currentTime, 0.2);
+    if (this.padGain && this.ctx) {
+      const targetPad = this.isMuted ? 0 : this.masterVolume * this.ambientVolume * this.musicVolume * 0.04;
+      this.padGain.gain.setTargetAtTime(targetPad, this.ctx.currentTime, 0.2);
     }
   }
 
@@ -53,19 +62,18 @@ class SoundEngine {
     const gain = this.ctx.createGain();
 
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(30, t + 0.08);
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.exponentialRampToValueAtTime(30, t + 0.09);
 
     gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.8, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
 
     osc.connect(gain);
     gain.connect(this.ctx.destination);
 
     osc.start(t);
-    osc.stop(t + 0.09);
+    osc.stop(t + 0.1);
 
-    // Start CRT electrical hum when powered on
     this.startHum();
     this.startAmbient();
   }
@@ -108,33 +116,85 @@ class SoundEngine {
 
   public startAmbient() {
     this.initCtx();
-    if (!this.ctx || this.ambientOsc1) return;
+    if (!this.ctx || this.padOscs.length > 0) return;
 
     const t = this.ctx.currentTime;
-    this.ambientOsc1 = this.ctx.createOscillator();
-    this.ambientOsc2 = this.ctx.createOscillator();
-    this.ambientGain = this.ctx.createGain();
+    this.padGain = this.ctx.createGain();
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(300, t);
+    filter.frequency.setValueAtTime(450, t);
 
-    // Dark moody detuned drone
-    this.ambientOsc1.type = 'sine';
-    this.ambientOsc1.frequency.setValueAtTime(55, t); // A1 note
-    this.ambientOsc2.type = 'triangle';
-    this.ambientOsc2.frequency.setValueAtTime(55.4, t); // Detuned
+    // Create LFO filter modulation for subtle evolving atmospheric swell
+    this.lfoOsc = this.ctx.createOscillator();
+    this.lfoOsc.type = 'sine';
+    this.lfoOsc.frequency.setValueAtTime(0.15, t); // Very slow swell
 
-    const initialAmb = this.isMuted ? 0 : this.masterVolume * this.ambientVolume * 0.03;
-    this.ambientGain.gain.setValueAtTime(initialAmb, t);
+    const lfoGain = this.ctx.createGain();
+    lfoGain.gain.setValueAtTime(150, t);
+    this.lfoOsc.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    this.lfoOsc.start(t);
 
-    this.ambientOsc1.connect(filter);
-    this.ambientOsc2.connect(filter);
-    filter.connect(this.ambientGain);
-    this.ambientGain.connect(this.ctx.destination);
+    // Eerie ambient chord: A minor 9 (A1, E2, G2, C3, B3)
+    const frequencies = [55.0, 82.41, 98.0, 130.81, 246.94];
+    this.padOscs = frequencies.map((freq, idx) => {
+      const osc = this.ctx!.createOscillator();
+      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq + (Math.random() * 0.4 - 0.2), t);
+      osc.connect(filter);
+      osc.start(t);
+      return osc;
+    });
 
-    this.ambientOsc1.start(t);
-    this.ambientOsc2.start(t);
+    const targetGain = this.isMuted ? 0 : this.masterVolume * this.ambientVolume * this.musicVolume * 0.035;
+    this.padGain.gain.setValueAtTime(targetGain, t);
+
+    filter.connect(this.padGain);
+    this.padGain.connect(this.ctx.destination);
+  }
+
+  public toggleRadioStatic(enable: boolean) {
+    this.initCtx();
+    if (!this.ctx) return;
+
+    if (enable && !this.radioNoiseNode) {
+      const t = this.ctx.currentTime;
+      const bufferSize = this.ctx.sampleRate * 2;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+
+      this.radioNoiseNode = this.ctx.createBufferSource();
+      this.radioNoiseNode.buffer = buffer;
+      this.radioNoiseNode.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1200, t);
+      filter.Q.setValueAtTime(3.0, t);
+
+      this.radioGain = this.ctx.createGain();
+      const targetVal = this.isMuted ? 0 : this.masterVolume * 0.15;
+      this.radioGain.gain.setValueAtTime(targetVal, t);
+
+      this.radioNoiseNode.connect(filter);
+      filter.connect(this.radioGain);
+      this.radioGain.connect(this.ctx.destination);
+
+      this.radioNoiseNode.start(t);
+      this.isRadioActive = true;
+    } else if (!enable && this.radioNoiseNode) {
+      try {
+        this.radioNoiseNode.stop();
+        this.radioNoiseNode.disconnect();
+      } catch (e) {}
+      this.radioNoiseNode = null;
+      this.radioGain = null;
+      this.isRadioActive = false;
+    }
   }
 
   public playBootBeep() {
@@ -146,16 +206,16 @@ class SoundEngine {
     const gain = this.ctx.createGain();
 
     osc.type = 'square';
-    osc.frequency.setValueAtTime(880, t); // Vintage POST beep
+    osc.frequency.setValueAtTime(880, t);
 
-    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.3, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
 
     osc.connect(gain);
     gain.connect(this.ctx.destination);
 
     osc.start(t);
-    osc.stop(t + 0.16);
+    osc.stop(t + 0.17);
   }
 
   public playKeyClick() {
@@ -163,7 +223,6 @@ class SoundEngine {
     if (!this.ctx || this.isMuted) return;
 
     const t = this.ctx.currentTime;
-    // Short noise click
     const bufferSize = this.ctx.sampleRate * 0.005;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -176,11 +235,11 @@ class SoundEngine {
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1800 + Math.random() * 400, t);
+    filter.frequency.setValueAtTime(1800 + Math.random() * 500, t);
 
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.15, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.005);
+    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.18, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.006);
 
     noise.connect(filter);
     filter.connect(gain);
@@ -198,16 +257,16 @@ class SoundEngine {
     const gain = this.ctx.createGain();
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(200 + Math.random() * 600, t);
+    osc.frequency.setValueAtTime(250 + Math.random() * 600, t);
 
-    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.08, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
+    gain.gain.setValueAtTime(this.masterVolume * this.uiVolume * 0.09, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
 
     osc.connect(gain);
     gain.connect(this.ctx.destination);
 
     osc.start(t);
-    osc.stop(t + 0.025);
+    osc.stop(t + 0.03);
   }
 
   public playModemConnect() {
@@ -263,7 +322,7 @@ class SoundEngine {
     if (!this.ctx || this.isMuted) return;
 
     const t = this.ctx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 arpeggio
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
     notes.forEach((freq, i) => {
       const osc = this.ctx!.createOscillator();
       const gain = this.ctx!.createGain();

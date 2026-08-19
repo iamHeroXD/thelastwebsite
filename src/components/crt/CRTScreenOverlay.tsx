@@ -5,6 +5,15 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
   const crtSettings = useGameStore((state) => state.crtSettings);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const themeColors = {
+    green: '#00ff66',
+    amber: '#ffb000',
+    cyan: '#00e5ff',
+    white: '#e5e5e5',
+  };
+
+  const currentThemeColor = themeColors[crtSettings.phosphorTheme || 'green'];
+
   // Render scanlines and phosphor noise on HTML5 Canvas overlay
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -27,7 +36,6 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (crtSettings.scanlines && crtSettings.intensity > 0.05) {
-        // Draw CRT scanlines
         const lineSpacing = 3;
         const opacity = 0.12 * crtSettings.intensity;
         ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
@@ -35,12 +43,12 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
           ctx.fillRect(0, y, canvas.width, 1);
         }
 
-        // Draw rolling scanline beam
+        // Draw rolling scanline beam matched to phosphor theme
         const rollY = (frame * 1.5) % (canvas.height + 60) - 30;
         const grad = ctx.createLinearGradient(0, rollY - 30, 0, rollY + 30);
-        grad.addColorStop(0, 'rgba(0, 255, 102, 0)');
-        grad.addColorStop(0.5, `rgba(0, 255, 102, ${0.08 * crtSettings.intensity})`);
-        grad.addColorStop(1, 'rgba(0, 255, 102, 0)');
+        grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        grad.addColorStop(0.5, currentThemeColor + '22');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = grad;
         ctx.fillRect(0, rollY - 30, canvas.width, 60);
       }
@@ -65,13 +73,16 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
     };
-  }, [crtSettings]);
+  }, [crtSettings, currentThemeColor]);
 
   const intensityVal = crtSettings.intensity;
   const brightnessVal = crtSettings.brightness;
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-crt-dark rounded-xl select-none">
+    <div
+      className="relative w-full h-full overflow-hidden bg-crt-dark rounded-xl select-none"
+      style={{ color: currentThemeColor }}
+    >
       {/* Curved Screen Barrel Distortion & Bloom Wrapper */}
       <div
         className={`w-full h-full relative transition-all duration-300 ${
@@ -80,12 +91,12 @@ export const CRTScreenOverlay: React.FC<{ children: React.ReactNode }> = ({ chil
         style={{
           filter: `brightness(${brightnessVal}) contrast(${1.0 + intensityVal * 0.15}) drop-shadow(0 0 ${
             intensityVal * 12
-          }px rgba(0, 255, 102, ${0.4 * intensityVal}))`,
+          }px ${currentThemeColor}66)`,
           transform: crtSettings.reducedMotion ? 'none' : 'scale(0.995)',
         }}
       >
         {/* Actual Game Screen Content */}
-        <div className="w-full h-full text-crt-green font-mono">{children}</div>
+        <div className="w-full h-full font-mono">{children}</div>
 
         {/* HTML5 Canvas CRT Scanlines & Roll overlay */}
         <canvas

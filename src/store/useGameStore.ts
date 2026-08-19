@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { BootState, CRTSettings, EvidenceItem, OSWindow, Person, Organization, TimelineEvent, FSNode } from '../types/game';
+import { BootState, CRTSettings, CRTPhosphorTheme, EvidenceItem, OSWindow, Person, Organization, TimelineEvent, FSNode } from '../types/game';
 import { soundEngine } from '../audio/soundEngine';
 import { initialWebsites, initialEvidence, initialTimeline, initialPeople, initialOrganizations, initialFileSystem } from '../data/storyData';
 
@@ -14,6 +14,9 @@ interface GameState {
   historyIndex: number;
   unlockedUrls: string[];
   bookmarks: string[];
+
+  // Radio App
+  isRadioOn: boolean;
 
   // Investigation & Evidence
   discoveredEvidence: EvidenceItem[];
@@ -44,6 +47,7 @@ interface GameState {
   // Actions
   setBootState: (state: BootState) => void;
   updateCRTSettings: (settings: Partial<CRTSettings>) => void;
+  toggleRadio: (on?: boolean) => void;
   navigateUrl: (url: string) => void;
   browserBack: () => void;
   browserForward: () => void;
@@ -78,15 +82,19 @@ interface GameState {
 const LOCAL_STORAGE_KEY = 'LAST_WEBSITE_EARTH_SAVE_V1';
 
 const defaultCRTSettings: CRTSettings = {
-  intensity: 0.7,
+  intensity: 0.75,
   brightness: 1.0,
+  phosphorTheme: 'green',
   scanlines: true,
   chromatic: true,
   flicker: true,
+  ghosting: true,
+  curvedScreen: true,
   audioVolume: 0.8,
   ambientVolume: 0.5,
   uiVolume: 0.7,
   humVolume: 0.4,
+  musicVolume: 0.6,
   muted: false,
   reducedMotion: false,
 };
@@ -107,7 +115,6 @@ const initialWindows: OSWindow[] = [
 ];
 
 export const useGameStore = create<GameState>((set, get) => {
-  // Try loading initial state from LocalStorage
   let savedData: any = null;
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -140,6 +147,8 @@ export const useGameStore = create<GameState>((set, get) => {
       'http://aurora-energy.net',
       'http://globalweather.gov',
     ],
+
+    isRadioOn: false,
 
     discoveredEvidence: savedData?.discoveredEvidence || initialEvidence.slice(0, 3),
     evidenceConnections: savedData?.evidenceConnections || [],
@@ -181,9 +190,17 @@ export const useGameStore = create<GameState>((set, get) => {
         updated.humVolume,
         updated.uiVolume,
         updated.ambientVolume,
+        updated.musicVolume,
         updated.muted
       );
       saveToStorage(get());
+    },
+
+    toggleRadio: (on) => {
+      const current = get().isRadioOn;
+      const next = on !== undefined ? on : !current;
+      set({ isRadioOn: next });
+      soundEngine.toggleRadioStatic(next);
     },
 
     navigateUrl: (url) => {
@@ -254,7 +271,6 @@ export const useGameStore = create<GameState>((set, get) => {
           soundEngine.playDiscovery();
           const nextEv = [...discoveredEvidence, item];
 
-          // Also unlock corresponding timeline event if matched
           const updatedTimeline = timeline.map((t) => {
             if (t.id === `timeline-${evidenceId}` || item.keyInfo.toLowerCase().includes(t.title.toLowerCase())) {
               return { ...t, discovered: true };
@@ -262,7 +278,6 @@ export const useGameStore = create<GameState>((set, get) => {
             return t;
           });
 
-          // Calculate archive integrity
           const integrity = Math.min(100, Math.round((nextEv.length / initialEvidence.length) * 100));
 
           set({
@@ -284,7 +299,6 @@ export const useGameStore = create<GameState>((set, get) => {
 
       if (pairExists) return true;
 
-      // Check if valid connection exists in predefined relations
       const ev1 = discoveredEvidence.find((e) => e.id === id1);
       const ev2 = discoveredEvidence.find((e) => e.id === id2);
 
@@ -390,7 +404,6 @@ export const useGameStore = create<GameState>((set, get) => {
 
     unlockFileNode: (nodeId) => {
       soundEngine.playDiscovery();
-      // Unlock node recursively in file system
       const unlockRecursive = (node: FSNode): FSNode => {
         if (node.id === nodeId) {
           return { ...node, locked: false };
@@ -442,6 +455,7 @@ export const useGameStore = create<GameState>((set, get) => {
           'http://aurora-energy.net',
           'http://globalweather.gov',
         ],
+        isRadioOn: false,
         discoveredEvidence: initialEvidence.slice(0, 3),
         evidenceConnections: [],
         archiveIntegrity: 15,
