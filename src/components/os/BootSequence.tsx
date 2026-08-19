@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../store/useGameStore';
 import { soundEngine } from '../../audio/soundEngine';
-import { Terminal, Shield, Play, RotateCcw, Cpu } from 'lucide-react';
+import { Terminal, Shield, Play, Cpu } from 'lucide-react';
 
 export const BootSequence: React.FC = () => {
   const setBootState = useGameStore((state) => state.setBootState);
@@ -17,9 +17,9 @@ export const BootSequence: React.FC = () => {
     const beamTimer = setTimeout(() => {
       setHorizontalBeam(false);
       soundEngine.playBootBeep();
-    }, 800);
+    }, 400);
 
-    // Phase 2: Sequential authentic POST boot messages
+    // Phase 2: Sequential POST boot messages
     const sequence = [
       'INITIALIZING ORBIT ARCHIVE WORKSTATION...',
       'MEMORY CHECK ............ 640KB BASE / 64MB EXTENDED .... OK',
@@ -47,12 +47,10 @@ export const BootSequence: React.FC = () => {
         lineIndex++;
       } else {
         clearInterval(lineInterval);
-        setTimeout(() => {
-          soundEngine.playDiscovery();
-          setBootComplete(true);
-        }, 500);
+        soundEngine.playDiscovery();
+        setBootComplete(true);
       }
-    }, 180);
+    }, 100);
 
     return () => {
       clearTimeout(beamTimer);
@@ -66,10 +64,13 @@ export const BootSequence: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-full bg-crt-dark p-6 md:p-12 flex flex-col justify-between select-none overflow-hidden">
+    <div
+      onClick={bootComplete ? handleEnterArchive : undefined}
+      className="relative w-full h-full bg-crt-dark p-6 md:p-12 flex flex-col justify-between select-none overflow-hidden cursor-pointer"
+    >
       {/* Thin Horizontal CRT Beam Expansion Effect */}
       {horizontalBeam && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 bg-black">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 bg-black/40">
           <div className="w-full h-1 bg-crt-green shadow-[0_0_25px_#00ff66] animate-pulse" />
         </div>
       )}
@@ -86,7 +87,7 @@ export const BootSequence: React.FC = () => {
       </div>
 
       {/* Center Console Output Log */}
-      <div className="flex-1 my-6 space-y-1.5 overflow-y-auto text-xs md:text-sm font-mono tracking-wide">
+      <div className="flex-1 my-4 space-y-1 overflow-y-auto text-xs md:text-sm font-mono tracking-wide">
         {bootLines.map((line, idx) => (
           <div
             key={idx}
@@ -105,36 +106,39 @@ export const BootSequence: React.FC = () => {
 
       {/* Bottom Title & Action Buttons when boot is complete */}
       {bootComplete && (
-        <div className="border-t-2 border-crt-green/40 pt-6 animate-in fade-in zoom-in-95 duration-500">
-          <div className="mb-6">
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-widest text-crt-green drop-shadow-[0_0_15px_rgba(0,255,102,0.6)] uppercase">
+        <div className="border-t-2 border-crt-green/40 pt-4 animate-in fade-in zoom-in-95 duration-300">
+          <div className="mb-4">
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-widest text-crt-green drop-shadow-[0_0_15px_rgba(0,255,102,0.6)] uppercase">
               THE LAST WEBSITE ON EARTH
             </h1>
-            <p className="text-sm md:text-base text-amber-400 font-bold tracking-wide mt-2">
-              The internet is dead. Something is still online.
+            <p className="text-xs md:text-sm text-amber-400 font-bold tracking-wide mt-1">
+              The internet is dead. Something is still online. Click anywhere to enter.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleEnterArchive}
-              className="flex items-center space-x-2 px-6 py-3 bg-crt-green hover:bg-emerald-300 text-black font-extrabold rounded shadow-[0_0_20px_rgba(0,255,102,0.5)] transition-all hover:scale-105"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-crt-green hover:bg-emerald-300 text-black font-extrabold rounded shadow-[0_0_20px_rgba(0,255,102,0.5)] transition-all hover:scale-105 text-xs"
             >
-              <Play className="w-5 h-5 fill-current" />
+              <Play className="w-4 h-4 fill-current" />
               <span>ENTER ARCHIVE BROWSER</span>
             </button>
 
             <button
-              onClick={() => setBootState('DESKTOP')}
-              className="flex items-center space-x-2 px-5 py-3 border border-crt-green hover:bg-crt-green/20 text-crt-green font-bold rounded transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                setBootState('DESKTOP');
+              }}
+              className="flex items-center space-x-2 px-4 py-2.5 border border-crt-green hover:bg-crt-green/20 text-crt-green font-bold rounded transition-all text-xs"
             >
-              <Terminal className="w-5 h-5" />
+              <Terminal className="w-4 h-4" />
               <span>OPEN OS DESKTOP</span>
             </button>
 
             <div className="ml-auto text-xs text-crt-green/60 flex items-center space-x-3">
               <Shield className="w-4 h-4 text-amber-400" />
-              <span>RECOVERED SITES: {unlockedUrls.length} / 10</span>
+              <span>SITES: {unlockedUrls.length} / 10</span>
               <span>INTEGRITY: {archiveIntegrity}%</span>
             </div>
           </div>

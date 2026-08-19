@@ -135,7 +135,8 @@ export const useGameStore = create<GameState>((set, get) => {
   ];
 
   return {
-    bootState: savedData?.bootState || 'OFF',
+    // Default boot state: always start powered ON and BOOTING for immediate display
+    bootState: savedData?.bootState && savedData.bootState !== 'OFF' ? savedData.bootState : 'BOOTING',
     crtSettings: savedData?.crtSettings || defaultCRTSettings,
 
     currentUrl: initialUrl,
@@ -438,7 +439,7 @@ export const useGameStore = create<GameState>((set, get) => {
     resetGame: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       set({
-        bootState: 'OFF',
+        bootState: 'BOOTING',
         crtSettings: defaultCRTSettings,
         currentUrl: 'http://worldnet.news',
         historyStack: ['http://worldnet.news'],
